@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache
+.npm
+
+# Yarn integrity file
+.yarn-integrity
+
+# Next.js cache
+.next/cache/
+
+# Large files
+*.iso
+*.dmg
+*.exe
+*.dll
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.mov
+*.mp4
+*.avi
+*.mkv
+*.wav
+*.mp3
+*.flac
+*.psd
+*.sketch
+*.fig
+*.pdf
+*.pptx
+*.docx
+*.xlsx
