@@ -29,7 +29,8 @@ export default function SignalValuesTable({ onValuesChange }: { onValuesChange?:
   const { data, loading, error, refetch } = useSignalValues();
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [initialLoad, setInitialLoad] = useState(true);
-  const { start, stop, isActive } = usePolling(refetch, 30000, true);
+  // 输入寄存器（READ_GROUP_NAME）每 10ms 读取一次
+  const { start, stop, isActive } = usePolling(refetch, 10, true);
 
   useEffect(() => {
     if (data) {

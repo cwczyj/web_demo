@@ -26,9 +26,11 @@ const MAX_HISTORY_SIZE = 100;
 class OperationHistory {
   private history: HistoryEntry[] = [];
   private nextId: number = 1;
+  private lastReadLogTime: number = 0;
+  private readLogInterval: number = 30000; // 30s 记录一次读操作日志
 
   /**
-   * Add an operation to history
+   * 添加操作到历史（无节流）
    */
   addOperation(
     type: 'read' | 'write',
@@ -63,11 +65,37 @@ class OperationHistory {
   }
 
   /**
+   * 添加读操作到历史（30s 节流，避免频繁重复记录）
+   * @returns 如果记录了操作则返回 true，否则返回 false
+   */
+  addReadOperationThrottled(
+    values: SignalValues | undefined,
+    success: boolean,
+    error?: string
+  ): boolean {
+    const now = Date.now();
+    if (now - this.lastReadLogTime >= this.readLogInterval) {
+      this.lastReadLogTime = now;
+      this.addOperation('read', values, success, error);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 设置读操作日志记录间隔（毫秒）
+   */
+  setReadLogInterval(intervalMs: number): void {
+    this.readLogInterval = intervalMs;
+  }
+
+  /**
    * Clear all history
    */
   clearHistory(): void {
     this.history = [];
     this.nextId = 1;
+    this.lastReadLogTime = 0;
   }
 
   /**

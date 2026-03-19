@@ -102,7 +102,8 @@ export async function signalsRoutes(fastify: FastifyInstance, _options: FastifyP
       );
 
       const mappedValues = mapSignalResponse(result);
-      operationHistory.addOperation('read', mappedValues, true);
+      // 输入寄存器每 10ms 读取一次，但日志每 30s 记录一次
+      operationHistory.addReadOperationThrottled(mappedValues, true);
 
       return {
         success: true,
@@ -110,6 +111,7 @@ export async function signalsRoutes(fastify: FastifyInstance, _options: FastifyP
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      // 错误情况总是记录日志
       operationHistory.addOperation('read', undefined, false, errorMessage);
 
       if (error instanceof JsonRpcError) {
