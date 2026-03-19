@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Form, InputNumber, Button, Card, Row, Col, message, Space, Typography, Tag } from 'antd';
 import { SendOutlined, SyncOutlined } from '@ant-design/icons';
 import type { SignalValues } from '../hooks/useSignalValues';
@@ -28,8 +28,8 @@ export default function WriteForm({ initialValues }: { initialValues?: SignalVal
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const previousValuesRef = useRef<SignalValues | null>(null);
   
-  // 保持寄存器（WRITE_GROUP_NAME）的界面输入框每 30s 联动更新一次
-  const syncFormWithValues = () => {
+  // 保持寄存器（WRITE_GROUP_NAME）的界面输入框每 30s 从读取的值中联动更新一次
+  const syncFormWithValues = useCallback(() => {
     if (initialValues) {
       // 只有当值发生变化时才更新表单
       const hasChanged = !previousValuesRef.current || 
@@ -46,7 +46,7 @@ export default function WriteForm({ initialValues }: { initialValues?: SignalVal
         setLastSyncTime(new Date());
       }
     }
-  };
+  }, [initialValues, form]);
   
   const { start, stop, isActive } = usePolling(syncFormWithValues, 30000, true);
 
