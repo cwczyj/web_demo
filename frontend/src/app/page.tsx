@@ -14,14 +14,12 @@ const { Title } = Typography;
 
 export default function Home() {
   const [currentValues, setCurrentValues] = useState<SignalValues | undefined>();
-  const [formKey, setFormKey] = useState(0);
 
   const handleLoadPreset = useCallback((values: SignalValues) => {
     setCurrentValues(values);
-    setFormKey(k => k + 1);
   }, []);
 
-  const handleValuesChange = useCallback((values: SignalValues) => {
+  const handleSyncToWriteForm = useCallback((values: SignalValues) => {
     setCurrentValues(values);
   }, []);
 
@@ -37,7 +35,7 @@ export default function Home() {
                 <DeviceStatus />
               </Col>
               <Col xs={24}>
-                <SignalValuesTable onValuesChange={handleValuesChange} />
+                <SignalValuesTable onSyncToWriteForm={handleSyncToWriteForm} />
               </Col>
               <Col xs={24}>
                 <OperationHistory />
@@ -48,7 +46,7 @@ export default function Home() {
           <Col xs={24} lg={8}>
             <Row gutter={[24, 24]}>
               <Col xs={24}>
-                <WriteForm key={formKey} initialValues={currentValues} />
+                <WriteForm currentValues={currentValues} />
               </Col>
               <Col xs={24}>
                 <PointPresets currentValues={currentValues} onLoadPreset={handleLoadPreset} />

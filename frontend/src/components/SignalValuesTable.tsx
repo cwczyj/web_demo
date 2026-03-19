@@ -39,33 +39,35 @@ const SignalValueCell = ({ data, keyName, loading, error, initialValue }: Signal
   const [displayValue, setDisplayValue] = useState<number | null>(null);
   
   useEffect(() => {
-    if (!initialValue || error) return;
+    if (error) return;
     
     const newValue = data?.[keyName];
     if (newValue !== undefined && newValue !== prevValueRef.current) {
       prevValueRef.current = newValue;
       setDisplayValue(newValue);
     }
-  }, [data, keyName, error, initialValue]);
+  }, [data, keyName, error]);
 
-  if (loading || initialValue) return <Spin size="small" />;
+  if (loading && !initialValue) return <Spin size="small" />;
   if (error) return <Tag color="error">Error</Tag>;
   if (typeof displayValue === 'number') {
     return <Text code>{displayValue.toFixed(4)}</Text>;
   }
+  if (loading) return <Spin size="small" />;
   return <Tag color="warning">N/A</Tag>;
 };
 
-export default function SignalValuesTable({ onValuesChange }: { onValuesChange?: (values: SignalValues) => void }) {
+export default function SignalValuesTable({ onSyncToWriteForm }: { onSyncToWriteForm?: (values: SignalValues) => void }) {
   const { data, loading, error, refetch } = useSignalValues();
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [syncLoading, setSyncLoading] = useState(false);
   const previousDataRef = useRef<SignalValues | null>(null);
   
-  // 输入寄存器（READ_GROUP_NAME）每 10ms 读取一次
-  const { start, stop, isActive } = usePolling(refetch, 10, true);
+  // 输入寄存器（READ_GROUP_NAME）只在点击按钮时读取
+  const { start, stop, isActive } = usePolling(refetch, 1000, false);
 
-  // 只在数据实际变化时更新时间戳和通知父组件
+  // 只在数据实际变化时更新时间戳
   useEffect(() => {
     if (data) {
       setInitialLoad(false);
@@ -81,13 +83,33 @@ export default function SignalValuesTable({ onValuesChange }: { onValuesChange?:
       if (hasChanged) {
         previousDataRef.current = data;
         setLastUpdated(new Date());
-        onValuesChange?.(data);
       }
     }
-  }, [data, onValuesChange]);
+  }, [data]);
 
   const handleRefresh = () => {
     refetch();
+    start();
+  };
+
+  const handleSyncToWriteForm = async () => {
+    setSyncLoading(true);
+    try {
+      // 如果没有数据或数据未加载，先刷新一次
+      if (!data || !previousDataRef.current) {
+        await refetch();
+      }
+      // 使用最新的数据（优先使用刚获取的 data，否则使用之前缓存的数据）
+      const currentData = data || previousDataRef.current;
+      if (currentData) {
+        onSyncToWriteForm?.(currentData);
+      } else {
+        // 如果还是没有数据，再尝试获取一次
+        await refetch();
+      }
+    } finally {
+      setSyncLoading(false);
+    }
   };
 
   // 使用 useMemo 缓存列定义，避免每次渲染都重新创建
@@ -154,6 +176,13 @@ export default function SignalValuesTable({ onValuesChange }: { onValuesChange?:
             loading={loading}
           >
             Refresh
+          </Button>
+          <Button
+            onClick={handleSyncToWriteForm}
+            loading={syncLoading}
+            disabled={!data && !previousDataRef.current}
+          >
+            Sync to WriteForm
           </Button>
         </Space>
       }

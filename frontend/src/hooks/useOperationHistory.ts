@@ -57,6 +57,17 @@ export function useOperationHistory(): UseOperationHistoryReturn {
 
   useEffect(() => {
     refresh();
+    
+    // 每 30 秒自动刷新一次历史记录
+    const intervalId = setInterval(() => {
+      refresh();
+    }, 30000);
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }, [refresh]);
 
   return { history, loading, error, clearHistory, refresh };
